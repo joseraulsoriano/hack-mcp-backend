@@ -319,6 +319,17 @@ export const toolDefinitions = [
         },
       });
 
+      // Fan-out a M2 (Perfilador) fire-and-forget. Si M2 esta caido o la env
+      // no esta seteada, el ingest devuelve igual: M1 no se entera. El lock se
+      // hace sobre lead_id para evitar bucles si M2 reingestara (no lo hace).
+      void notifyProfiler({
+        tenant_slug: args.tenant_slug,
+        lead_id: leadId,
+        transcript_id: transcript.id,
+        transcript: args.transcript,
+        source: args.source,
+      });
+
       return {
         ok: true,
         created_lead: created,
@@ -367,3 +378,56 @@ export interface ToolDef<S extends z.ZodTypeAny> {
 }
 
 export type AnyToolDef = ToolDef<z.ZodTypeAny>;
+
+// ---------------------------------------------------------------------------
+// Fan-out a M2 (Perfilador). El MCP es la fuente unica de verdad: cuando
+// alguien (M1, n8n, Postman) ingesta un transcript, M2 se entera de forma
+// automatica sin que el caller sepa nada.
+//
+// Si M2_WEBHOOK_URL no esta definida, no hace nada. Si esta y M2 esta caido,
+// loguea y sigue: nunca rompe el ingest. Disena para idempotencia: si M2
+// recibe el mismo transcript_id dos veces, debe acabar con la misma papeleta.
+// ---------------------------------------------------------------------------
+
+interface ProfilerNotice {
+  tenant_slug: string;
+  lead_id: string;
+  transcript_id: string;
+  transcript: string;
+  source: string;
+}
+
+async function notifyProfiler(notice: ProfilerNotice): Promise<void> {
+  const url = process.env.M2_WEBHOOK_URL;
+  if (!url) return;
+  try {
+    // Timeout corto: M2 debe responder 202 ACCEPTED en <1s y procesar el LLM
+    // en background. Si tarda mas, asumimos que cayo y seguimos sin bloquear.
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 3000);
+    const res = await fetch(url, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        tenant_slug: notice.tenant_slug,
+        lead_id: notice.lead_id,
+        transcript_id: notice.transcript_id,
+        transcript_text: notice.transcript,
+        source: notice.source,
+        session_id: notice.lead_id,
+      }),
+      signal: ctrl.signal,
+    });
+    clearTimeout(timer);
+    if (!res.ok) {
+      const body = await res.text().catch(() => "");
+      console.warn(
+        `[mcp->m2] webhook ${url} respondio ${res.status}: ${body.slice(0, 200)}`,
+      );
+    } else {
+      console.log(`[mcp->m2] webhook ok lead=${notice.lead_id.slice(0, 8)}`);
+    }
+  } catch (err) {
+    console.warn(`[mcp->m2] webhook ${url} fallo: ${(err as Error).message}`);
+  }
+}
