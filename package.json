@@ -1,0 +1,37 @@
+{
+  "name": "hack",
+  "version": "0.0.1",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "db:up": "docker compose up -d postgres",
+    "db:down": "docker compose down",
+    "db:reset": "docker compose down -v && docker compose up -d postgres",
+    "db:psql": "docker exec -it hack-postgres psql -U hack -d hack",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "bun run src/db/migrate.ts",
+    "db:seed": "bun run src/db/seed.ts",
+    "db:studio": "drizzle-kit studio",
+    "bootstrap": "bun run db:up && sleep 3 && bun run db:migrate && bun run db:seed",
+    "smoke": "bun run src/scripts/smoke.ts",
+    "mcp": "bun run src/mcp/server.ts",
+    "mcp:http": "bun run src/mcp/http.ts",
+    "cli": "bun run src/cli/index.tsx"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.4",
+    "drizzle-orm": "^0.36.4",
+    "hono": "^4.6.13",
+    "ink": "^7.0.3",
+    "openai": "^4.76.0",
+    "postgres": "^3.4.5",
+    "react": "^19.2.6",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.1.14",
+    "@types/react": "^19.2.15",
+    "drizzle-kit": "^0.28.1",
+    "typescript": "^5.7.2"
+  }
+}

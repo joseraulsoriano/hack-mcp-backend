@@ -1,0 +1,22 @@
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: hack-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: hack
+      POSTGRES_PASSWORD: hack
+      POSTGRES_DB: hack
+    ports:
+      - "5433:5432"
+    volumes:
+      - hack-pgdata:/var/lib/postgresql/data
+      - ./scripts/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U hack -d hack"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  hack-pgdata:

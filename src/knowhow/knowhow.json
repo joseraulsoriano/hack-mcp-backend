@@ -1,0 +1,50 @@
+{
+  "tenant": {
+    "slug": "acme",
+    "name": "Acme Sales Co"
+  },
+  "products": [
+    {
+      "slug": "saas-billing",
+      "name": "Acme Billing Cloud",
+      "summary": "SaaS de facturacion electronica y cobranza para PyMEs y middle-market en LatAm.",
+      "pricing": {
+        "starter": { "mxn_month": 999, "users": 3, "invoices": 200 },
+        "growth": { "mxn_month": 2999, "users": 10, "invoices": 2000 },
+        "enterprise": { "mxn_month": "custom", "users": "unlimited" }
+      },
+      "expertPrompt": "Eres un Agente Experto de Acme Billing Cloud. Tu objetivo es agendar una demo de 20 min con quien decide la compra. No inventes precios fuera del catalogo. Hablas en espanol mexicano, directo, sin tecnicismos.",
+      "knowhow": [
+        "Acme Billing Cloud factura CFDI 4.0 y se integra con SAT en tiempo real.",
+        "Soporta conciliacion bancaria automatica con BBVA, Santander, Banorte y HSBC.",
+        "Cuenta con API REST publica y un servidor MCP para integrarse a CRMs.",
+        "El plan Starter cuesta 999 MXN/mes, incluye 3 usuarios y 200 facturas mensuales.",
+        "El plan Growth cuesta 2999 MXN/mes, 10 usuarios y 2000 facturas.",
+        "El plan Enterprise es a medida con SLA 99.95 por ciento y soporte 24/7.",
+        "Onboarding tipico de 5 dias habiles con un Customer Success Manager dedicado.",
+        "Casos de exito: ferreteria El Pinon redujo 70 por ciento el tiempo de cobranza en 3 meses."
+      ]
+    },
+    {
+      "slug": "sales-consulting",
+      "name": "Acme Sales Consulting",
+      "summary": "Consultoria de ventas B2B con metodologia MEDDPICC y entrenamiento al equipo comercial.",
+      "pricing": {
+        "diagnostic": { "mxn_total": 45000, "duration_weeks": 2 },
+        "playbook": { "mxn_total": 180000, "duration_weeks": 8 },
+        "full_program": { "mxn_total": 480000, "duration_weeks": 16 }
+      },
+      "expertPrompt": "Eres un Agente Experto de Acme Sales Consulting. Tu objetivo es agendar una llamada de 30 min con un C-level para diagnosticar la madurez comercial. Hablas con autoridad pero sin soberbia, en espanol mexicano.",
+      "knowhow": [
+        "Acme Sales Consulting trabaja con equipos comerciales de 5 a 50 representantes.",
+        "Aplicamos MEDDPICC, BANT y SPIN Selling segun el ciclo de venta del cliente.",
+        "El diagnostico inicial dura 2 semanas y entrega un reporte de madurez comercial.",
+        "El programa Playbook entrega procesos, scripts y dashboards de pipeline en 8 semanas.",
+        "El Full Program incluye coaching mensual 1 a 1 con cada AE durante 16 semanas.",
+        "Cobramos por proyecto en MXN, sin retainer mensual obligatorio.",
+        "Trabajamos con SaaS B2B, manufactura y servicios financieros principalmente.",
+        "Caso reciente: GrowFast SaaS aumento 2.4x su pipeline calificado en 4 meses."
+      ]
+    }
+  ]
+}
