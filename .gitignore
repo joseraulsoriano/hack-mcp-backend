@@ -1,6 +1,17 @@
 node_modules
 bun.lockb
 .env
+.env.local
+.env.*.local
 .DS_Store
 dist
 drizzle/.cache
+
+# Repos hermanos clonados al lado (cada uno tiene su propio remote)
+M1/
+M2/
+FULL/
+
+# Logs y carpetas de despliegue locales
+*.log
+.railway/

@@ -1,0 +1,20 @@
+node_modules
+bun.lockb
+.env
+.env.local
+.env.*.local
+.git
+.gitignore
+.DS_Store
+.cursor
+.railway
+
+# Repos hermanos clonados al lado del backend (cada uno tiene su deploy)
+M1
+M2
+FULL
+
+# Logs y carpetas locales
+*.log
+dist
+drizzle/.cache
