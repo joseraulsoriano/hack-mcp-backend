@@ -127,6 +127,7 @@ export const transcripts = pgTable(
     text: text("text").notNull(),
     audioUrl: text("audio_url"),
     segments: jsonb("segments").$type<TranscriptSegment[] | null>().default(null),
+    meta: jsonb("meta").$type<TranscriptMeta>().default({}).notNull(),
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
   },
   (t) => ({
@@ -299,4 +300,22 @@ export interface TranscriptSegment {
   text: string;
   tsStart: number;
   tsEnd: number;
+}
+
+export interface TranscriptSpeaker {
+  id: string;
+  label: string;
+  nearField: boolean;
+}
+
+/**
+ * Metadata del transcript que NO necesita columnas dedicadas (idioma, duracion,
+ * timestamp de grabacion, mapeo de speakers). Vive en JSONB para poder iterar
+ * sin migrar el schema. Ahora mismo lo llena M1 con su output de Whisper.
+ */
+export interface TranscriptMeta {
+  language?: string;
+  durationMs?: number;
+  recordedAt?: string;
+  speakers?: TranscriptSpeaker[];
 }

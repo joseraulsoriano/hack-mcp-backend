@@ -1,4 +1,5 @@
 import { db, schema } from "../db/client.ts";
+import type { TranscriptMeta, TranscriptSegment } from "../db/schema.ts";
 
 export interface CreateTranscriptInput {
   tenantId: string;
@@ -6,6 +7,8 @@ export interface CreateTranscriptInput {
   source?: string;
   text: string;
   audioUrl?: string | null;
+  segments?: TranscriptSegment[] | null;
+  meta?: TranscriptMeta;
 }
 
 export async function createTranscript(input: CreateTranscriptInput) {
@@ -17,6 +20,8 @@ export async function createTranscript(input: CreateTranscriptInput) {
       source: input.source ?? "manual",
       text: input.text,
       audioUrl: input.audioUrl ?? null,
+      segments: input.segments ?? null,
+      meta: input.meta ?? {},
     })
     .returning();
   if (!row) throw new Error("createTranscript: no row");

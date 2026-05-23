@@ -130,6 +130,58 @@ async function main() {
   })) as { leads: Array<{ name: string | null; intent: string; status: string }> };
   for (const l of leadsRes.leads) console.log(`  ${l.name}  intent=${l.intent}  status=${l.status}`);
 
+  header("ingest_transcript (payload canonico de M1)");
+  const m1Payload = {
+    tenant_slug,
+    source: "glasses" as const,
+    transcript:
+      "Andrea: Hola, soy Andrea, pero me dicen Maggie.\nAaron: Hola, soy Aaron, soy estudiante y me interesa el SaaS de facturacion.",
+    transcript_meta: {
+      language: "es",
+      duration_ms: 30314,
+      recorded_at: new Date().toISOString(),
+      speakers: [
+        { id: "speaker_1", label: "Andrea", nearField: true },
+        { id: "speaker_2", label: "Aaron", nearField: false },
+      ],
+      segments: [
+        {
+          speakerId: "speaker_1",
+          role: "seller" as const,
+          text: "Hola, soy Andrea, pero me dicen Maggie.",
+          tsStart: 0,
+          tsEnd: 4,
+        },
+        {
+          speakerId: "speaker_2",
+          role: "lead" as const,
+          text: "Hola, soy Aaron, soy estudiante y me interesa el SaaS de facturacion.",
+          tsStart: 4,
+          tsEnd: 8,
+        },
+      ],
+    },
+  };
+  const ingestRes = (await call("ingest_transcript", m1Payload)) as {
+    ok: boolean;
+    created_lead: boolean;
+    lead_id: string;
+    transcript_id: string;
+  };
+  console.log(
+    `  ok=${ingestRes.ok} created_lead=${ingestRes.created_lead} lead_id=${ingestRes.lead_id} transcript_id=${ingestRes.transcript_id}`,
+  );
+
+  header("get_lead_context del lead recien creado por M1");
+  const m1Ctx = (await call("get_lead_context", {
+    tenant_slug,
+    lead_key: ingestRes.lead_id,
+  })) as {
+    found: boolean;
+    recentTranscripts?: Array<{ text: string }>;
+  };
+  console.log(`  found=${m1Ctx.found}  transcripts=${m1Ctx.recentTranscripts?.length}`);
+
   console.log("\nSMOKE OK");
   await sqlClient.end();
 }

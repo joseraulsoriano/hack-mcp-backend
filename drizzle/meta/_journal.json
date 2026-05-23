@@ -8,6 +8,13 @@
       "when": 1779567868411,
       "tag": "0000_clear_network",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1779574788303,
+      "tag": "0001_purple_champions",
+      "breakpoints": true
     }
   ]
 }

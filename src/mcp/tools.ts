@@ -2,6 +2,7 @@ import { z } from "zod";
 import { requireTenantBySlug } from "../repos/tenants.repo.ts";
 import {
   createLead,
+  getLeadById,
   getLeadContext,
   listLeads,
   updateLeadProfile,
@@ -10,7 +11,12 @@ import { getProductBySlug, listProducts } from "../repos/products.repo.ts";
 import { createTranscript } from "../repos/transcripts.repo.ts";
 import { publishEvent } from "../repos/events.repo.ts";
 import { queryKnowhow } from "../knowhow/query.ts";
-import { emptyPapeleta, type LeadPapeleta } from "../db/schema.ts";
+import {
+  emptyPapeleta,
+  type LeadPapeleta,
+  type TranscriptMeta,
+  type TranscriptSegment,
+} from "../db/schema.ts";
 
 /**
  * Catalogo de tools del servidor MCP de M6.
@@ -207,6 +213,118 @@ export const toolDefinitions = [
       });
 
       return { lead: updated };
+    },
+  },
+  {
+    name: "ingest_transcript",
+    description:
+      "Ingiere un transcript desde M1 con el shape canonico de Meta Glasses/Whisper (transcript + transcript_meta con segments, speakers, language, duration_ms, recorded_at). Si lead_id se provee, adjunta el transcript al lead existente; si no, crea un lead vacio y devuelve su id. Idempotente: el mismo M1 puede llamarlo N veces.",
+    schema: TenantInput.extend({
+      source: z.enum(["glasses", "upload", "granola", "manual"]).default("glasses"),
+      transcript: z.string().min(1).describe("Texto plano del transcript ya formateado por hablante."),
+      transcript_meta: z
+        .object({
+          language: z.string().optional(),
+          duration_ms: z.number().nonnegative().optional(),
+          recorded_at: z.string().optional(),
+          speakers: z
+            .array(
+              z.object({
+                id: z.string(),
+                label: z.string(),
+                nearField: z.boolean(),
+              }),
+            )
+            .optional(),
+          segments: z
+            .array(
+              z.object({
+                speakerId: z.string(),
+                role: z.enum(["seller", "lead", "unknown"]).optional(),
+                text: z.string(),
+                tsStart: z.number(),
+                tsEnd: z.number(),
+              }),
+            )
+            .optional(),
+        })
+        .optional(),
+      lead_id: z
+        .string()
+        .uuid()
+        .optional()
+        .describe("Si se provee, adjunta el transcript a este lead. Si no, crea uno nuevo."),
+      name: z.string().optional(),
+      phone: z.string().optional(),
+      email: z.string().email().optional(),
+      audio_url: z.string().url().optional(),
+    }),
+    handler: async (args) => {
+      const tenant = await requireTenantBySlug(args.tenant_slug);
+
+      let leadId = args.lead_id ?? null;
+      let created = false;
+
+      if (leadId) {
+        const existing = await getLeadById(tenant.id, leadId);
+        if (!existing) throw new Error(`lead '${leadId}' no existe`);
+      } else {
+        const lead = await createLead({
+          tenantId: tenant.id,
+          name: args.name ?? null,
+          phone: args.phone ?? null,
+          email: args.email ?? null,
+          source: args.source,
+        });
+        leadId = lead.id;
+        created = true;
+        await publishEvent({
+          tenantId: tenant.id,
+          type: "lead.created",
+          leadId,
+          payload: { source: args.source, via: "ingest_transcript" },
+        });
+      }
+
+      const segments = (args.transcript_meta?.segments ?? null) as
+        | TranscriptSegment[]
+        | null;
+      const meta: TranscriptMeta = {
+        language: args.transcript_meta?.language,
+        durationMs: args.transcript_meta?.duration_ms,
+        recordedAt: args.transcript_meta?.recorded_at,
+        speakers: args.transcript_meta?.speakers,
+      };
+
+      const transcript = await createTranscript({
+        tenantId: tenant.id,
+        leadId,
+        source: args.source,
+        text: args.transcript,
+        audioUrl: args.audio_url ?? null,
+        segments,
+        meta,
+      });
+
+      await publishEvent({
+        tenantId: tenant.id,
+        type: "transcript.ingested",
+        leadId,
+        payload: {
+          transcript_id: transcript.id,
+          source: args.source,
+          duration_ms: args.transcript_meta?.duration_ms,
+          segment_count: segments?.length ?? 0,
+          speaker_count: args.transcript_meta?.speakers?.length ?? 0,
+        },
+      });
+
+      return {
+        ok: true,
+        created_lead: created,
+        lead_id: leadId,
+        transcript_id: transcript.id,
+      };
     },
   },
   {
