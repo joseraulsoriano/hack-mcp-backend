@@ -16,6 +16,9 @@
     "smoke": "bun run src/scripts/smoke.ts",
     "mcp": "bun run src/mcp/server.ts",
     "mcp:http": "bun run src/mcp/http.ts",
+    "m4:check": "bun run src/scripts/check-m4.ts",
+    "orchestrate": "bash scripts/orchestrate.sh",
+    "orchestra:check": "bun run src/scripts/check-orchestra.ts",
     "cli": "bun run src/cli/index.tsx"
   },
   "dependencies": {
