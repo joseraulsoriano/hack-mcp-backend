@@ -100,9 +100,14 @@ app.post("/tools/:name", async (c) => {
 // Railway inyecta PORT. Local usamos MCP_HTTP_PORT para no chocar con otros
 // servicios. Hostname 0.0.0.0 explicito para garantizar binding en
 // contenedores (la default de Bun ya es esa, pero mejor explicito).
-const port = Number(process.env.PORT ?? process.env.MCP_HTTP_PORT ?? 3333);
-const hostname = process.env.HOSTNAME ?? "0.0.0.0";
+const port = Number(Bun.env.PORT ?? process.env.PORT ?? process.env.MCP_HTTP_PORT ?? 3333);
+const hostname = Bun.env.HOSTNAME ?? process.env.HOSTNAME ?? "0.0.0.0";
 
-export default { fetch: app.fetch, port, hostname };
+Bun.serve({
+  fetch: app.fetch,
+  port,
+  hostname,
+});
+
 console.log(`[mcp-http] escuchando en http://${hostname}:${port}`);
 console.log(`[mcp-http] GET /tools  -  POST /tools/:name  -  POST /voice/identify  -  POST /voice/rag-profile`);

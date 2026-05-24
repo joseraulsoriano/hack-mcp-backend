@@ -22,4 +22,4 @@ EXPOSE 3333
 # El boot corre migraciones primero (drizzle es idempotente) y luego levanta
 # el HTTP server. Si la migracion falla, el contenedor muere y Railway lo
 # reinicia con backoff, lo que da visibilidad clara en logs.
-CMD ["sh", "-c", "bun run src/db/migrate.ts && bun run src/mcp/http.ts"]
+CMD ["sh", "-c", "bun src/db/migrate.ts && bun src/mcp/http.ts"]
