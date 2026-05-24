@@ -1,17 +1,7 @@
-# Railway service config para el backend MCP (M3 + M6).
-#
-# Builder DOCKERFILE para tener control total del stack (Bun). Nixpacks
-# tambien soportaria Bun pero el Dockerfile es mas predecible.
-#
-# Healthcheck apunta a /health (Hono devuelve {ok:true}). Si falla 3 veces
-# seguidas, Railway reinicia el contenedor.
-
 [build]
-builder = "DOCKERFILE"
-dockerfilePath = "Dockerfile"
+builder = "dockerfile"
 
 [deploy]
 healthcheckPath = "/health"
-healthcheckTimeout = 30
-restartPolicyType = "ON_FAILURE"
-restartPolicyMaxRetries = 5
+healthcheckTimeout = 100
+restartPolicyMaxRetries = 10
