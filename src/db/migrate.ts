@@ -10,9 +10,13 @@ import { db, sqlClient } from "./client.ts";
  */
 async function main() {
   console.log("[migrate] preparando extensiones (vector, pg_trgm, uuid-ossp)");
-  await sqlClient`CREATE EXTENSION IF NOT EXISTS vector`;
-  await sqlClient`CREATE EXTENSION IF NOT EXISTS pg_trgm`;
-  await sqlClient`CREATE EXTENSION IF NOT EXISTS "uuid-ossp"`;
+  try {
+    await sqlClient`CREATE EXTENSION IF NOT EXISTS vector`;
+    await sqlClient`CREATE EXTENSION IF NOT EXISTS pg_trgm`;
+    await sqlClient`CREATE EXTENSION IF NOT EXISTS "uuid-ossp"`;
+  } catch (e) {
+    console.warn("[migrate] aviso al crear extensiones (posible falta de permisos):", (e as Error).message);
+  }
   console.log("[migrate] aplicando migraciones desde ./drizzle");
   await migrate(db, { migrationsFolder: "./drizzle" });
   console.log("[migrate] ok");
