@@ -21,6 +21,8 @@ console.log(`[db] Conectando a ${maskedUrl}`);
 export const sqlClient = postgres(DATABASE_URL, {
   max: 10,
   prepare: false,
+  connect_timeout: 10, // 10 segundos
+  idle_timeout: 20,
   onnotice: (msg) => console.log("[db notice]", msg),
 });
 
