@@ -2,8 +2,15 @@ import postgres from "postgres";
 import { drizzle } from "drizzle-orm/postgres-js";
 import * as schema from "./schema.ts";
 
-const DATABASE_URL =
-  process.env.DATABASE_URL ?? "postgres://hack:hack@localhost:5433/hack";
+const DATABASE_URL = process.env.DATABASE_URL;
+
+if (!DATABASE_URL) {
+  console.error("❌ ERROR: DATABASE_URL is not defined in environment variables.");
+  process.exit(1);
+}
+
+const maskedUrl = DATABASE_URL.replace(/:([^@]+)@/, ":****@");
+console.log(`[db] conectando a ${maskedUrl}`);
 
 /**
  * Single connection pool reused by repos, MCP server y scripts CLI.
