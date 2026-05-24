@@ -91,6 +91,12 @@ export interface UpdatePapeletaInput {
   status?: LeadStatus;
   assignedProductId?: string | null;
   assignedPhone?: string | null;
+  // Identidad: M2 los puede extraer del transcript ("Hola, soy Andrea, mi
+  // numero es 22-15-66-13-70") y los persiste aqui, NO en la papeleta. Con
+  // estos campos, /voice/identify por caller_id puede resolver al lead.
+  name?: string | null;
+  phone?: string | null;
+  email?: string | null;
 }
 
 export async function updateLeadProfile(input: UpdatePapeletaInput) {
@@ -103,6 +109,9 @@ export async function updateLeadProfile(input: UpdatePapeletaInput) {
       assignedProductId:
         input.assignedProductId === undefined ? undefined : input.assignedProductId,
       assignedPhone: input.assignedPhone === undefined ? undefined : input.assignedPhone,
+      name: input.name === undefined ? undefined : input.name,
+      phone: input.phone === undefined ? undefined : input.phone,
+      email: input.email === undefined ? undefined : input.email,
       updatedAt: new Date(),
     })
     .where(

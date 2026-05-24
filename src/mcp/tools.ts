@@ -152,7 +152,7 @@ export const toolDefinitions = [
   {
     name: "update_papeleta",
     description:
-      "Actualiza la papeleta del lead. Lo usa el Modulo 2 (Perfilador) despues de procesar un transcript. Cambia status/intent/producto asignado opcionalmente.",
+      "Actualiza la papeleta del lead. Lo usa el Modulo 2 (Perfilador) despues de procesar un transcript. Cambia status/intent/producto asignado opcionalmente. Tambien acepta name/phone/email para que M2 pueda guardar la identidad del lead extraida del transcript: M5 (voice) necesita el phone para resolver leads por caller_id.",
     schema: TenantInput.extend({
       lead_id: z.string().uuid(),
       papeleta: z
@@ -184,6 +184,12 @@ export const toolDefinitions = [
         .optional(),
       product_slug: z.string().optional(),
       assigned_phone: z.string().optional(),
+      // Datos de identidad que M2 puede extraer del transcript. Cualquiera
+      // de los 3 es opcional: solo se actualiza si viene en el payload.
+      // M5 (voice) los necesita para resolver leads por caller_id.
+      name: z.string().nullable().optional(),
+      phone: z.string().nullable().optional(),
+      email: z.string().email().nullable().optional(),
     }),
     handler: async (args) => {
       const tenant = await requireTenantBySlug(args.tenant_slug);
@@ -203,6 +209,9 @@ export const toolDefinitions = [
         status: args.status,
         assignedProductId: productId,
         assignedPhone: args.assigned_phone,
+        name: args.name,
+        phone: args.phone,
+        email: args.email,
       });
 
       await publishEvent({

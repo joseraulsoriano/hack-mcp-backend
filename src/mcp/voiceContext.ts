@@ -145,12 +145,16 @@ function mapDealStage(status: string): DealStage {
     case "new":
       return "Discovery";
     case "profiling":
+    case "assigned":
       return "Qualification";
     case "active":
+    case "engaged":
+    case "meeting_booked":
       return "Negotiation";
     case "won":
       return "Closed Won";
     case "lost":
+    case "discarded":
       return "Closed Lost";
     default:
       return "Unknown";
